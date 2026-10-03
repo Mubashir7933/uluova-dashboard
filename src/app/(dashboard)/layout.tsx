@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/app/components/layout/sidebar";
+import { DashboardShell } from "@/app/components/layout/dashboard-shell";
 import { createClient } from "@/lib/supabase/server";
 
 type DashboardLayoutProps = {
@@ -14,17 +15,13 @@ export default async function DashboardLayout({
 
   const { data, error } = await supabase.auth.getClaims();
 
-  if (error || !data?.claims) {
+  if (error || !data?.claims?.sub) {
     redirect("/login");
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f5f8fc]">
-      <Sidebar />
-
-      <main className="min-w-0 flex-1 overflow-x-hidden">
-        {children}
-      </main>
-    </div>
+    <DashboardShell sidebar={<Sidebar />}>
+      {children}
+    </DashboardShell>
   );
 }

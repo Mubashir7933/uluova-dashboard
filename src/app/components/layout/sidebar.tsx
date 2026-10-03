@@ -184,7 +184,7 @@ export async function Sidebar() {
   );
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-blue-100 bg-white lg:flex lg:flex-col">
+    <aside className="flex h-full w-full flex-col border-r border-blue-100 bg-white">
       <div className="flex h-24 shrink-0 items-center border-b border-blue-100 px-7">
         <Image
           src="/Uluova.png"
