@@ -260,12 +260,12 @@ export default async function MaintenancePage({
           Sahaların arıza bildirimleri ve mevcut bakım durumu.
         </p>
   
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
           {overviewCards.map((card) => (
             <Link
               key={card.label}
               href={card.href}
-              className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
+              className="min-w-0 rounded-2xl border border-blue-100 bg-white p-3 shadow-sm transition hover:border-blue-300 hover:shadow-md sm:p-5"
             >
               <span
                 className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${card.style}`}
@@ -273,11 +273,11 @@ export default async function MaintenancePage({
                 {card.label}
               </span>
   
-              <p className="mt-4 text-3xl font-bold text-slate-900">
+              <p className="mt-3 text-2xl font-bold text-slate-900 sm:text-3xl">
                 {card.count}
               </p>
   
-              <p className="mt-3 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-slate-500">
                 Kayıtları görüntüle →
               </p>
             </Link>
