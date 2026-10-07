@@ -27,6 +27,28 @@ export default async function HumanResourcesPage() {
     notFound();
   }
 
+    // Read every permitted site, including Yeniköy and inactive sites.
+    const { data: sites, error: sitesError } = await supabase
+    .from("sites")
+    .select("id, name, is_active")
+    .order("name");
+
+  // Count current personnel without downloading employee records.
+  const siteSummaries = await Promise.all(
+    (sites ?? []).map(async (site) => {
+      const { count, error: countError } = await supabase
+        .from("personnel")
+        .select("id", { count: "exact", head: true })
+        .eq("current_site_id", site.id)
+        .neq("status", "ayrildi");
+
+      return {
+        ...site,
+        personnelCount: countError ? null : count,
+      };
+    })
+  );
+
   return (
     <div className="p-4 sm:p-6 lg:p-10">
       <header>
@@ -43,19 +65,74 @@ export default async function HumanResourcesPage() {
         </p>
       </header>
 
-      <section className="mt-8 rounded-2xl border border-blue-100 bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-lg font-semibold text-slate-900">
-          İnsan Kaynakları Yönetimi
+      <section className="mt-8" aria-labelledby="sites-heading">
+        <h2
+          id="sites-heading"
+          className="text-lg font-semibold text-slate-900"
+        >
+          Sahalar
         </h2>
 
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-          Tüm sahaların personel kayıtları ve personel transfer talepleri
-          bu bölümden yönetilecek.
+        <p className="mt-2 text-sm text-slate-600">
+          Güncel saha atamalarına göre personel dağılımı. İşten ayrılanlar
+          sayılara dahil değildir.
         </p>
 
-        <div className="mt-5 rounded-xl bg-blue-50 p-4 text-sm leading-6 text-[#064786]">
-          Personel kayıt ve transfer işlemleri henüz kullanıma açılmadı.
-        </div>
+        {sitesError ? (
+          <p
+            role="alert"
+            className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-700"
+          >
+            Saha bilgileri yüklenemedi. Lütfen sayfayı yenileyin.
+          </p>
+        ) : siteSummaries.length === 0 ? (
+          <p className="mt-4 rounded-xl bg-white p-4 text-sm text-slate-600">
+            Görüntülenebilen saha bulunamadı.
+          </p>
+        ) : (
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {siteSummaries.map((site) => (
+              <article
+                key={site.id}
+                className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="font-semibold text-[#064786]">
+                    {site.name}
+                  </h3>
+
+                  {!site.is_active && (
+                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">
+                      Pasif saha
+                    </span>
+                  )}
+                </div>
+
+                {site.personnelCount === null ? (
+                  <p role="alert" className="mt-4 text-sm text-red-700">
+                    Personel sayısı yüklenemedi.
+                  </p>
+                ) : (
+                  <>
+                    <p className="mt-4 text-3xl font-bold text-slate-900">
+                      {site.personnelCount}
+                    </p>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      Mevcut personel
+                    </p>
+
+                    {site.personnelCount === 0 && (
+                      <p className="mt-3 text-sm text-slate-500">
+                        Bu sahada mevcut personel kaydı bulunmuyor.
+                      </p>
+                    )}
+                  </>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
