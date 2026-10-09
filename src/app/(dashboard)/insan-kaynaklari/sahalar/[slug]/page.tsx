@@ -4,7 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ page?: string | string[] }>;
+  searchParams: Promise<{
+    page?: string | string[];
+    success?: string | string[];
+  }>;
 };
 
 const statusLabels: Record<string, string> = {
@@ -46,7 +49,7 @@ export default async function SitePersonnelPage({ params, searchParams }: PagePr
   if (!site) notFound();
 
   // Load 50 employees per page in a stable order.
-  const { page: pageValue } = await searchParams;
+  const { page: pageValue, success } = await searchParams;
   const parsedPage = typeof pageValue === "string" ? Number(pageValue) : 1;
   const page = Number.isSafeInteger(parsedPage) && parsedPage > 0 && parsedPage <= 100000
     ? parsedPage : 1;
@@ -78,7 +81,23 @@ export default async function SitePersonnelPage({ params, searchParams }: PagePr
         {!employeesError && (
           <p className="mt-2 text-sm text-slate-600">Mevcut personel: {count ?? 0}</p>
         )}
+
+<Link
+          href={`${sitePath}/yeni-personel`}
+          className="mt-4 inline-block rounded-lg bg-[#064786] px-4 py-3 text-sm font-medium text-white hover:bg-[#053b70]"
+        >
+          Yeni Personel Ekle
+        </Link>
       </header>
+
+      {success === "created" && (
+        <p
+          role="status"
+          className="mt-6 rounded-xl bg-green-50 p-4 text-sm text-green-800"
+        >
+          Personel başarıyla kaydedildi.
+        </p>
+      )}
 
       {employeesError ? (
         <p role="alert" className="mt-6 rounded-xl bg-red-50 p-4 text-sm text-red-700">
@@ -95,7 +114,7 @@ export default async function SitePersonnelPage({ params, searchParams }: PagePr
               <caption className="sr-only">{site.name} mevcut personel listesi</caption>
               <thead className="bg-blue-50 text-[#064786]">
                 <tr>
-                  {["Personel No", "Ad Soyad", "Görevi", "Durum"].map((label) => (
+                  {["Personel No", "Ad Soyad", "Görevi", "Durum", "İşlemler"].map((label) => (
                     <th key={label} scope="col" className="whitespace-nowrap px-4 py-3 font-semibold">{label}</th>
                   ))}
                 </tr>
@@ -107,6 +126,14 @@ export default async function SitePersonnelPage({ params, searchParams }: PagePr
                     <td className="min-w-44 px-4 py-4 font-medium">{employee.full_name}</td>
                     <td className="px-4 py-4">{employee.position || "—"}</td>
                     <td className="whitespace-nowrap px-4 py-4">{statusLabels[employee.status] ?? employee.status}</td>
+                    <td className="px-4 py-4">
+  <Link
+    href={`/insan-kaynaklari/gecici-gorevlendirme?personnel=${employee.id}`}
+    className="font-medium text-[#0b68b2] hover:underline"
+  >
+    Geçici Görevlendirme
+  </Link>
+</td>                  
                   </tr>
                 ))}
               </tbody>
