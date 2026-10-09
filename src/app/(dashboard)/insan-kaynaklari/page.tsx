@@ -1,5 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+
 
 export default async function HumanResourcesPage() {
   // Verify the signed-in user's identity.
@@ -30,7 +32,7 @@ export default async function HumanResourcesPage() {
     // Read every permitted site, including Yeniköy and inactive sites.
     const { data: sites, error: sitesError } = await supabase
     .from("sites")
-    .select("id, name, is_active")
+    .select("id, name, is_active, slug")
     .order("name");
 
   // Count current personnel without downloading employee records.
@@ -92,10 +94,11 @@ export default async function HumanResourcesPage() {
         ) : (
           <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {siteSummaries.map((site) => (
-              <article
-                key={site.id}
-                className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm"
-              >
+             <Link
+             key={site.id}
+             href={`/insan-kaynaklari/sahalar/${encodeURIComponent(site.slug)}`}
+             className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-blue-600"
+           >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="font-semibold text-[#064786]">
                     {site.name}
@@ -129,7 +132,10 @@ export default async function HumanResourcesPage() {
                     )}
                   </>
                 )}
-              </article>
+               <p className="mt-4 text-sm font-semibold text-[#0b68b2]">
+    Personelleri görüntüle →
+  </p>
+</Link>
             ))}
           </div>
         )}
