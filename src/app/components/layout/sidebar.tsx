@@ -26,7 +26,7 @@ const roleLabels: Record<UserRole, string> = {
 
 const maintenanceNavigationItem: NavigationItem = {
   label: "Bakım",
-  href: "/bakim?status=open",
+  href: "/bakim",
   exact: true,
   children: [
     {
@@ -100,13 +100,27 @@ export async function Sidebar() {
 
   let centralDepartmentItems: NavigationItem[] = [];
 
+
+  if (role === "master") {
+    const { data: sites, error: sitesError } = await supabase
+      .from("sites")
+      .select("name, slug")
+      .eq("is_active", true)
+      .order("id");
+  
+    if (sitesError) {
+      throw new Error("Failed to load sites for master navigation.");
+    }
+  
+    siteItems = (sites ?? []).map((site) => ({
+      label: site.name,
+      href: `/sahalar/${site.slug}`,
+    }));
+  }
+
   if (role === "master") {
     centralDepartmentItems = [
       maintenanceNavigationItem,
-      {
-        label: "Bakım",
-        href: "/bakim",
-      },
       {
         label: "İnsan Kaynakları",
         href: "/insan-kaynaklari",
